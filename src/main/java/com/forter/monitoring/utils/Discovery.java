@@ -9,6 +9,7 @@ import com.amazonaws.services.ec2.model.*;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,10 +26,18 @@ import static java.util.Arrays.asList;
 This class represents the discovery of the riemann machine.
 It is possible to use it to get the IP of a machine, based on its name / id.
 */
-public class RiemannDiscovery {
+public class Discovery {
     private final AmazonEC2 ec2Client;
 
-    public RiemannDiscovery() {
+    private static class SingletonHolder {
+        private static Discovery instance = new Discovery();
+    }
+
+    public static Discovery instance() {
+        return SingletonHolder.instance;
+    }
+
+    private Discovery() {
         ec2Client = new AmazonEC2Client(new AWSCredentialsProviderChain(new InstanceProfileCredentialsProvider(), new EnvironmentVariableCredentialsProvider()));
     }
 
@@ -91,6 +100,25 @@ public class RiemannDiscovery {
         return describeInstances(
                 new DescribeInstancesRequest().withFilters(nameFilter,runningFilter));
     }
+
+    public Optional<String> getMachineName() {
+        try {
+            return Discovery.instance().retrieveName();
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public String getRiemannIP(Optional<String> machineName) throws IOException {
+        if (machineName.isPresent()) {
+            String machinePrefix = (machineName.toString().startsWith("prod") ? "prod" : "develop");
+            return (Iterables.get(Discovery.instance().describeInstancesByName(machinePrefix + "-riemann-instance"), 0)).getPrivateIpAddress();
+        }
+        else {
+            throw new RuntimeException("Cannot ger riemann IP");
+        }
+    }
+
 
     private Iterable<Instance> describeInstances(DescribeInstancesRequest request) {
         final DescribeInstancesResult result = ec2Client.describeInstances(request);

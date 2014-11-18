@@ -2,27 +2,24 @@ package com.forter.monitoring;
 
 import java.io.IOException;
 import com.aphyr.riemann.client.RiemannClient;
+import com.forter.monitoring.utils.Discovery;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.forter.monitoring.utils.RiemannDiscovery;
-
-import com.google.common.collect.Iterables;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
 
 public class RiemannListener extends TestListenerAdapter{
     private String riemannIP;
-    private  String machineName;
+    private Optional<String> machineName;
     private final int riemannPort = 5555;
     private RiemannClient client;
     private String description;
-    private RiemannDiscovery DiscoveryInstance;
 
     public void connect() {
         if (client == null) {
             try {
-                machineName = getMachineName().get();;
-                riemannIP = getRiemannIP(DiscoveryInstance);
+                machineName = Discovery.instance().getMachineName();
+                riemannIP = Discovery.instance().getRiemannIP(machineName);
                 client = RiemannClient.tcp(riemannIP, riemannPort);
             }
             catch (IOException e) {
@@ -38,22 +35,8 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
-    private String getRiemannIP(RiemannDiscovery discover) throws IOException {
-        String machinePrefix = (machineName.startsWith("prod") ? "prod" : "develop");
-        return (Iterables.get(discover.describeInstancesByName(machinePrefix + "-riemann-instance"), 0)).getPrivateIpAddress();
-    }
-
-    private Optional<String> getMachineName() {
-        try {
-            return new RiemannDiscovery().retrieveName();
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public void sendEvent(ITestResult tr, String state) {
-        DiscoveryInstance = new RiemannDiscovery();
-        if (DiscoveryInstance.isAWS()) {
+        if (Discovery.instance().isAWS()) {
             connect();
             if (state == "failure") {
                 description = tr.getThrowable().toString();
