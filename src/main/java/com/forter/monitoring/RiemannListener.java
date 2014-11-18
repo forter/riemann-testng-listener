@@ -63,7 +63,7 @@ public class RiemannListener extends TestListenerAdapter{
             client.event().
                     service(machineName + " " + tr.getInstanceName() + "-" + tr.getName()).
                     state(state).
-                    tags("storm").
+                    tags("javatests").
                     description(description).
                     ttl(20).
                     send();
