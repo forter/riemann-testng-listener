@@ -3,13 +3,12 @@ jdk: oraclejdk7
 script:
 - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 - mvn test -B
-
 deploy:
   provider: s3
   access_key_id:
-    secure: ""
+    secure: "LEtszu6XmHjLMdBGKZkiB11NGdRrN+yT4hYO670bAs/ITZLW/xlDjFxQeIiMdweqvMV1TaU2y3Awpg3qImmAMt0rxb9/riyMk3yT1+p8Svl3MdX9WgyU5cDIa9izaNxiapsekyfVDLxQGmwNcMdzRlB81zMygu8uGnUgdvttNV0="
   secret_access_key:
-    secure: ""
+    secure: "bDx6+jClgijXBnP1wNlIUplqo7gC27j8W6gGvvTziUJbQoEQtLPCat/ZUkm0m4NaHuOBYj9wB1IPoX7ulIAU/J0pX4R/JPgDRcY8TF/O9WjUaKjjw8ycF6eCIU8ahKMvJzhsSCVQtewCTeKOcWldjpN8dhqNRaYF8kpMcv0rwN4="
   bucket: oss.forter.com
   local-dir: /home/travis/.m2/repository/com/forter/riemann-testng-listener/
   upload-dir: repository/com/forter/riemann-testng-listener
