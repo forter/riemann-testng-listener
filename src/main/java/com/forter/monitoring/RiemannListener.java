@@ -12,15 +12,17 @@ import org.testng.TestListenerAdapter;
 
 public class RiemannListener extends TestListenerAdapter{
     private String riemannIP;
-    private final String machineName = getMachineName().get();;
+    private  String machineName;
     private final int riemannPort = 5555;
     private RiemannClient client;
     private String description;
+    private RiemannDiscovery DiscoveryInstance;
 
     public void connect() {
         if (client == null) {
             try {
-                riemannIP = getRiemannIP(new RiemannDiscovery());
+                machineName = getMachineName().get();;
+                riemannIP = getRiemannIP(DiscoveryInstance);
                 client = RiemannClient.tcp(riemannIP, riemannPort);
             }
             catch (IOException e) {
@@ -50,7 +52,8 @@ public class RiemannListener extends TestListenerAdapter{
     }
 
     public void sendEvent(ITestResult tr, String state) {
-        if (true) {
+        DiscoveryInstance = new RiemannDiscovery();
+        if (DiscoveryInstance.isAWS()) {
             connect();
             if (state == "failure") {
                 description = tr.getThrowable().toString();
