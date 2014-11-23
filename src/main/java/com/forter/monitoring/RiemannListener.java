@@ -12,11 +12,12 @@ public class RiemannListener extends TestListenerAdapter{
     private String riemannIP;
     private Optional<String> machineName;
     private final int riemannPort = 5555;
+    private final int eventTTL = 20;
     private RiemannClient client;
     private String description;
 
     public void connect() {
-        if (client == null) {
+        if (!client.isConnected()) {
             try {
                 machineName = Discovery.instance().getMachineName();
                 riemannIP = Discovery.instance().getRiemannIP(machineName);
@@ -48,7 +49,7 @@ public class RiemannListener extends TestListenerAdapter{
                     state(state).
                     tags("javatests").
                     description(description).
-                    ttl(20).
+                    ttl(eventTTL).
                     send();
         }
     }
