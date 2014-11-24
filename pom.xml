@@ -18,6 +18,13 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <createChecksum>true</createChecksum>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>

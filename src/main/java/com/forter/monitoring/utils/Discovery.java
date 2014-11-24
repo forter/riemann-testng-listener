@@ -101,22 +101,22 @@ public class Discovery {
                 new DescribeInstancesRequest().withFilters(nameFilter,runningFilter));
     }
 
-    public Optional<String> getMachineName() {
+    public String getMachineName() {
+        final Optional<String> machineName;
         try {
-            return Discovery.instance().retrieveName();
+            machineName = Discovery.instance().retrieveName();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+        if (!machineName.isPresent()) {
+            throw new RuntimeException("Failed to discover my own name");
+        }
+        return machineName.get();
     }
 
-    public String getRiemannIP(Optional<String> machineName) throws IOException {
-        if (machineName.isPresent()) {
-            String machinePrefix = (machineName.toString().startsWith("prod") ? "prod" : "develop");
-            return (Iterables.get(Discovery.instance().describeInstancesByName(machinePrefix + "-riemann-instance"), 0)).getPrivateIpAddress();
-        }
-        else {
-            throw new RuntimeException("Cannot ger riemann IP");
-        }
+    public String getRiemannIP(String machineName) throws IOException {
+        String machinePrefix = (machineName.toString().startsWith("prod") ? "prod" : "develop");
+        return (Iterables.get(Discovery.instance().describeInstancesByName(machinePrefix + "-riemann-instance"), 0)).getPrivateIpAddress();
     }
 
 
