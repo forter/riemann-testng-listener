@@ -39,7 +39,7 @@ public class RiemannListener extends TestListenerAdapter{
     public void sendEvent(ITestResult tr, String state) {
         if (Discovery.instance().isAWS()) {
             connect();
-            if (state == "failure") {
+            if (state.equals("failure")) {
                 description = tr.getThrowable().toString();
             } else {
                 description = null;
