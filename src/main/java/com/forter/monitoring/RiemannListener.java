@@ -59,9 +59,21 @@ public class RiemannListener extends TestListenerAdapter{
         sendEvent(tr, "failed");
     }
 
+    @Override
     public void onConfigurationFailure(ITestResult tr) {
         sendEvent(tr, "failed");
     }
+
+    @Override
+    public void onConfigurationSkip(ITestResult tr) {
+        sendEvent(tr, "skipped");
+    }
+
+    @Override
+    public void onConfigurationSuccess(ITestResult tr) {
+        sendEvent(tr, "passed");
+    }
+
     @Override
     public void onTestSkipped(ITestResult tr) {
         sendEvent(tr, "skipped");
