@@ -39,7 +39,7 @@ public class RiemannListener extends TestListenerAdapter{
     public void sendEvent(ITestResult tr, String state) {
         if (Discovery.instance().isAWS()) {
             connect();
-            if (state.equals("failure")) {
+            if (state.equals("failed")) {
                 description = tr.getThrowable().toString();
             } else {
                 description = null;
@@ -56,11 +56,11 @@ public class RiemannListener extends TestListenerAdapter{
 
     @Override
     public void onTestFailure(ITestResult tr) {
-        sendEvent(tr, "failure");
+        sendEvent(tr, "failed");
     }
 
     public void onConfigurationFailure(ITestResult tr) {
-        sendEvent(tr, "failure");
+        sendEvent(tr, "failed");
     }
     @Override
     public void onTestSkipped(ITestResult tr) {
@@ -69,6 +69,6 @@ public class RiemannListener extends TestListenerAdapter{
 
     @Override
     public void onTestSuccess(ITestResult tr) {
-        sendEvent(tr, "pass");
+        sendEvent(tr, "passed");
     }
 }
