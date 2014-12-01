@@ -1,6 +1,9 @@
 package com.forter.monitoring;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import com.aphyr.riemann.client.RiemannClient;
 import com.forter.monitoring.utils.Discovery;
 import com.google.common.base.Throwables;
@@ -36,10 +39,13 @@ public class RiemannListener extends TestListenerAdapter{
     }
 
     public void sendEvent(ITestResult tr, String state) {
+        StringWriter errors = new StringWriter();
+
         if (Discovery.instance().isAWS()) {
             connect();
             if (state.equals("failed")) {
-                description = tr.getThrowable().getStackTrace().toString();
+                tr.getThrowable().printStackTrace(new PrintWriter(errors));
+                description = errors.toString();
             } else
                 description = null;
             }
