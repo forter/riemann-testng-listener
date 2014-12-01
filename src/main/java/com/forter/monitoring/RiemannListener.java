@@ -3,7 +3,6 @@ package com.forter.monitoring;
 import java.io.IOException;
 import com.aphyr.riemann.client.RiemannClient;
 import com.forter.monitoring.utils.Discovery;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
@@ -52,7 +51,6 @@ public class RiemannListener extends TestListenerAdapter{
                     ttl(eventTTL).
                     send();
         }
-    }
 
     @Override
     public void onTestFailure(ITestResult tr) {
