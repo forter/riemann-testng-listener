@@ -1,14 +1,15 @@
 package com.forter.monitoring;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import com.forter.monitoring.utils.Discovery;
 
 import com.aphyr.riemann.client.RiemannClient;
-import com.forter.monitoring.utils.Discovery;
 import com.google.common.base.Throwables;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class RiemannListener extends TestListenerAdapter{
     private String riemannIP;
@@ -46,7 +47,7 @@ public class RiemannListener extends TestListenerAdapter{
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
-            } else
+            } else {
                 description = null;
             }
             client.event().
@@ -57,6 +58,7 @@ public class RiemannListener extends TestListenerAdapter{
                     ttl(eventTTL).
                     send();
         }
+    }
 
     @Override
     public void onTestFailure(ITestResult tr) {
