@@ -19,8 +19,7 @@ public class RiemannListener extends TestListenerAdapter{
     private final int riemannPort = 5555;
     private final int eventTTL = 20;
     private RiemannClient client;
-    private final String commitHash;
-    private String description;
+    private String commitHash;
 
     public void connect() {
         if (client == null) {
@@ -57,6 +56,7 @@ public class RiemannListener extends TestListenerAdapter{
                 while ((line = reader.readLine())!= null) {
                     output.append(line + "\n");
                 }
+                commitHash = output.toString();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -67,6 +67,7 @@ public class RiemannListener extends TestListenerAdapter{
 
     public void sendEvent(ITestResult tr, String state) {
         StringWriter errors = new StringWriter();
+        String description;
 
         if (Discovery.instance().isAWS()) {
             connect();
