@@ -19,7 +19,7 @@ public class RiemannListener extends TestListenerAdapter{
     private final int riemannPort = 5555;
     private final int eventTTL = 20;
     private RiemannClient client;
-    private String commitHash;
+    private String commitHash = null;
 
     public void connect() {
         if (client == null) {
