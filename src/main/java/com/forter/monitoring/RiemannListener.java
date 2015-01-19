@@ -10,6 +10,8 @@ import org.testng.TestListenerAdapter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class RiemannListener extends TestListenerAdapter{
     private String riemannIP;
@@ -17,6 +19,7 @@ public class RiemannListener extends TestListenerAdapter{
     private final int riemannPort = 5555;
     private final int eventTTL = 20;
     private RiemannClient client;
+    private final String commitHash;
     private String description;
 
     public void connect() {
@@ -39,11 +42,35 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
+    public String getGitHash() {
+        if (commitHash == null) {
+            StringBuffer output = new StringBuffer();
+            Process p;
+            String command = "git rev-parse --verify HEAD";
+            try {
+                p = Runtime.getRuntime().exec(command);
+                p.waitFor();
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+                String line = "";
+                while ((line = reader.readLine())!= null) {
+                    output.append(line + "\n");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return commitHash;
+    }
+
     public void sendEvent(ITestResult tr, String state) {
         StringWriter errors = new StringWriter();
 
         if (Discovery.instance().isAWS()) {
             connect();
+            String CommitHash = getGitHash();
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
@@ -56,6 +83,7 @@ public class RiemannListener extends TestListenerAdapter{
                     tags("javatests").
                     description(description).
                     ttl(eventTTL).
+                    attribute("commitHash", CommitHash).
                     send();
         }
     }
