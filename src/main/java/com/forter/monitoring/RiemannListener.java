@@ -122,11 +122,13 @@ public class RiemannListener extends TestListenerAdapter{
 
     @Override
     public void onFinish(ITestContext testContext) {
-        try {
-            client.disconnect();
-        } catch (IOException e) {
-            System.out.println("Cannot disconnect from riemann " + e.getMessage());
+        if (client != null) {
+            try {
+                client.disconnect();
+            } catch (IOException e) {
+                System.out.println("Cannot disconnect from riemann " + e.getMessage());
+            }
+            client = null;
         }
-        client = null;
     }
 }
