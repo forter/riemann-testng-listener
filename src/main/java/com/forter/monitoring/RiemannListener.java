@@ -4,6 +4,7 @@ import com.forter.monitoring.utils.Discovery;
 
 import com.aphyr.riemann.client.RiemannClient;
 import com.google.common.base.Throwables;
+import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
 
@@ -88,5 +89,15 @@ public class RiemannListener extends TestListenerAdapter{
     @Override
     public void onTestSuccess(ITestResult tr) {
         sendEvent(tr, "passed");
+    }
+
+    @Override
+    public void onFinish(ITestContext testContext) {
+        try {
+            client.disconnect();
+        } catch (IOException e) {
+            System.out.println("Cannot disconnect from riemann " + e.getMessage());
+        }
+        client = null;
     }
 }
