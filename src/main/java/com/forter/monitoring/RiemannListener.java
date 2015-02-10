@@ -55,7 +55,7 @@ public class RiemannListener extends TestListenerAdapter{
 
                 String line = "";
                 while ((line = reader.readLine())!= null) {
-                    output.append(line + "\n");
+                    output.append(line);
                 }
                 commitHash = output.toString();
 
