@@ -53,10 +53,6 @@ public class RiemannListener extends TestListenerAdapter{
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-                String line = "";
-                while ((line = reader.readLine())!= null) {
-                    output.append(line);
-                }
                 commitHash = output.toString().trim();
 
             } catch (Exception e) {
