@@ -22,7 +22,7 @@ public class RiemannListener extends TestListenerAdapter{
     private RiemannClient client;
     private String commitHash = null;
 
-    public void connect() {
+    private void connect() {
         if (client == null) {
             try {
                 machineName = Discovery.instance().getMachineName();
@@ -42,9 +42,8 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
-    public String getGitHash() {
+    private String getGitHash() {
         if (commitHash == null) {
-            StringBuffer output = new StringBuffer();
             Process p;
             String command = "git rev-parse --verify HEAD";
             try {
@@ -68,7 +67,7 @@ public class RiemannListener extends TestListenerAdapter{
 
         if (Discovery.instance().isAWS()) {
             connect();
-            String CommitHash = getGitHash();
+            //String CommitHash = getGitHash();
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
@@ -81,7 +80,7 @@ public class RiemannListener extends TestListenerAdapter{
                     tags("javatests").
                     description(description).
                     ttl(eventTTL).
-                    attribute("commitHash", CommitHash).
+                    attribute("commitHash", getGitHash()).
                     send();
         }
     }
