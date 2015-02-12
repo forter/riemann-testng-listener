@@ -3,6 +3,7 @@ package com.forter.monitoring;
 import com.forter.monitoring.utils.Discovery;
 
 import com.aphyr.riemann.client.RiemannClient;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
@@ -21,8 +22,9 @@ public class RiemannListener extends TestListenerAdapter{
     private final int eventTTL = 20;
     private RiemannClient client;
     private String commitHash = null;
+    private boolean isAws;
 
-    public void connect() {
+    private void connect() {
         if (client == null) {
             try {
                 machineName = Discovery.instance().getMachineName();
@@ -42,7 +44,7 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
-    public String getGitHash() {
+    private String getGitHash() {
         if (commitHash == null) {
             StringBuffer output = new StringBuffer();
             Process p;
@@ -62,28 +64,37 @@ public class RiemannListener extends TestListenerAdapter{
         return commitHash;
     }
 
-    public void sendEvent(ITestResult tr, String state) {
+    private void sendEvent(ITestResult tr, String state) {
         StringWriter errors = new StringWriter();
         String description;
 
-        if (Discovery.instance().isAWS()) {
-            connect();
-            String CommitHash = getGitHash();
+        if (isAws) {
+            String commitHash = getGitHash();
+
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
             } else {
                 description = null;
             }
+
+            Preconditions.checkNotNull(commitHash, "Commit hash was null!");
+
             client.event().
                     service(machineName + " " + tr.getInstanceName() + "-" + tr.getName()).
                     state(state).
                     tags("javatests").
                     description(description).
                     ttl(eventTTL).
-                    attribute("commitHash", CommitHash).
+                    attribute("commitHash", commitHash).
                     send();
         }
+    }
+
+    @Override
+    public void onTestStart(ITestResult result) {
+        connect();
+        this.isAws = Discovery.instance().isAWS();
     }
 
     @Override
