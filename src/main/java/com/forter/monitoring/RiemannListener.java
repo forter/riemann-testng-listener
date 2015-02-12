@@ -16,10 +16,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 public class RiemannListener extends TestListenerAdapter{
-    private String riemannIP;
     private String machineName;
-    private final int riemannPort = 5555;
-    private final int eventTTL = 20;
     private RiemannClient client;
     private String commitHash = null;
     private boolean isAws;
@@ -28,12 +25,14 @@ public class RiemannListener extends TestListenerAdapter{
         if (client == null) {
             try {
                 machineName = Discovery.instance().getMachineName();
-                riemannIP = Discovery.instance().getRiemannIP(machineName);
+                String riemannIP = Discovery.instance().getRiemannIP(machineName);
+                int riemannPort = 5555;
                 client = RiemannClient.tcp(riemannIP, riemannPort);
             }
             catch (IOException e) {
                 throw Throwables.propagate(e);
             }
+
             try {
                 // initializes client, connection is actually async
                 client.connect();
@@ -44,24 +43,20 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
-    private String getGitHash() {
-        if (commitHash == null) {
-            StringBuffer output = new StringBuffer();
+    private void getGitHash() {
+        if (this.commitHash == null) {
             Process p;
             String command = "git rev-parse --verify HEAD";
             try {
                 p = Runtime.getRuntime().exec(command);
                 p.waitFor();
-                BufferedReader reader =
-                        new BufferedReader(new InputStreamReader(p.getInputStream()));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-                commitHash = reader.readLine();
-
+                this.commitHash = reader.readLine();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw Throwables.propagate(e);
             }
         }
-        return commitHash;
     }
 
     private void sendEvent(ITestResult tr, String state) {
@@ -69,8 +64,6 @@ public class RiemannListener extends TestListenerAdapter{
         String description;
 
         if (isAws) {
-            String commitHash = getGitHash();
-
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
@@ -80,6 +73,7 @@ public class RiemannListener extends TestListenerAdapter{
 
             Preconditions.checkNotNull(commitHash, "Commit hash was null!");
 
+            final int eventTTL = 20;
             client.event().
                     service(machineName + " " + tr.getInstanceName() + "-" + tr.getName()).
                     state(state).
@@ -93,8 +87,11 @@ public class RiemannListener extends TestListenerAdapter{
 
     @Override
     public void onTestStart(ITestResult result) {
-        connect();
         this.isAws = Discovery.instance().isAWS();
+        if (this.isAws) {
+            getGitHash();
+            connect();
+        }
     }
 
     @Override
@@ -133,7 +130,8 @@ public class RiemannListener extends TestListenerAdapter{
             try {
                 client.disconnect();
             } catch (IOException e) {
-                System.out.println("Cannot disconnect from riemann " + e.getMessage());
+                System.err.println("Cannot disconnect from riemann " + e.getMessage());
+                throw Throwables.propagate(e);
             }
             client = null;
         }
