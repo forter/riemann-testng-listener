@@ -5,15 +5,19 @@ import com.forter.monitoring.utils.Discovery;
 import com.aphyr.riemann.client.RiemannClient;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import org.eclipse.jgit.api.FetchCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.events.RepositoryEvent;
+import org.eclipse.jgit.events.RepositoryListener;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class RiemannListener extends TestListenerAdapter{
     private String machineName;
@@ -26,7 +30,7 @@ public class RiemannListener extends TestListenerAdapter{
             try {
                 machineName = Discovery.instance().getMachineName();
                 String riemannIP = Discovery.instance().getRiemannIP(machineName);
-                int riemannPort = 5555;
+                final int riemannPort = 5555;
                 client = RiemannClient.tcp(riemannIP, riemannPort);
             }
             catch (IOException e) {
@@ -43,19 +47,19 @@ public class RiemannListener extends TestListenerAdapter{
         }
     }
 
-    private void getGitHash() {
+    private void getGitHash() throws IOException {
         if (this.commitHash == null) {
-            Process p;
-            String command = "git rev-parse --verify HEAD";
-            try {
-                p = Runtime.getRuntime().exec(command);
-                p.waitFor();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
 
-                this.commitHash = reader.readLine();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            Repository repository = builder.findGitDir().readEnvironment().build();
+
+            final ObjectId head = repository.resolve(Constants.HEAD);
+
+            if (head == null) {
+                throw new RuntimeException(String.format("Could not locate GIT repository, DIR: %s", new File("").getAbsolutePath()));
             }
+
+            this.commitHash = head.getName();
         }
     }
 
@@ -89,7 +93,11 @@ public class RiemannListener extends TestListenerAdapter{
     public void onTestStart(ITestResult result) {
         this.isAws = Discovery.instance().isAWS();
         if (this.isAws) {
-            getGitHash();
+            try {
+                getGitHash();
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             connect();
         }
     }
