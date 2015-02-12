@@ -67,7 +67,6 @@ public class RiemannListener extends TestListenerAdapter{
 
         if (Discovery.instance().isAWS()) {
             connect();
-            //String CommitHash = getGitHash();
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
