@@ -26,6 +26,7 @@ public class RiemannListener extends TestListenerAdapter{
     private boolean isAws;
 
     private void connect() {
+        StringWriter error = new StringWriter();
         if (client == null) {
             try {
                 machineName = Discovery.instance().getMachineName();
@@ -35,7 +36,9 @@ public class RiemannListener extends TestListenerAdapter{
                 client.connect();
             }
             catch (IOException e) {
+                e.printStackTrace(new PrintWriter(error));
                 System.err.println("Cannot connect to riemann " + e.getMessage());
+                System.err.println(error.toString());
             }
         }
     }
