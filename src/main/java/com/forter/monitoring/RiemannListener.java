@@ -26,23 +26,19 @@ public class RiemannListener extends TestListenerAdapter{
     private boolean isAws;
 
     private void connect() {
+        StringWriter error = new StringWriter();
         if (client == null) {
             try {
                 machineName = Discovery.instance().getMachineName();
                 String riemannIP = Discovery.instance().getRiemannIP(machineName);
                 final int riemannPort = 5555;
                 client = RiemannClient.tcp(riemannIP, riemannPort);
-            }
-            catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-
-            try {
-                // initializes client, connection is actually async
                 client.connect();
             }
             catch (IOException e) {
-                throw Throwables.propagate(e);
+                e.printStackTrace(new PrintWriter(error));
+                System.err.println("Cannot connect to riemann " + e.getMessage());
+                System.err.println(error.toString());
             }
         }
     }
@@ -67,7 +63,7 @@ public class RiemannListener extends TestListenerAdapter{
         StringWriter errors = new StringWriter();
         String description;
 
-        if (isAws) {
+        if (client != null && isAws) {
             if (state.equals("failed")) {
                 tr.getThrowable().printStackTrace(new PrintWriter(errors));
                 description = errors.toString();
