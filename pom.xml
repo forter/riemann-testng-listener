@@ -6,7 +6,7 @@
 
     <groupId>com.forter</groupId>
     <artifactId>riemann-testng-listener</artifactId>
-    <version>0.4.8</version>
+    <version>0.4.99</version>
     <build>
         <plugins>
             <plugin>
@@ -29,9 +29,9 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.aphyr</groupId>
+            <groupId>com.forter</groupId>
             <artifactId>riemann-java-client</artifactId>
-            <version>0.2.10</version>
+            <version>0.2.12</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
